@@ -6,7 +6,7 @@ import arrow
 from test_scoring_script import calculate_full_score
 import operator
 
-UPLOAD_FOLDER = '/Users/hendrik/Documents/astrohack/flask_checker/submissions'
+UPLOAD_FOLDER = 'submissions'
 LEADERBOARD = dict()
 
 app = Flask(__name__)
@@ -114,4 +114,4 @@ def upload_file():
 
 if __name__ == "__main__":
 
-    app.run()
+    app.run(host='0.0.0.0',port='80')

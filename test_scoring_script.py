@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import sys
 
-TEST_PATH = '/Users/hendrik/Documents/astrohack/testsubmission copy.csv'
+TEST_PATH = 'testsubmission.csv'
 
 
 def calculate_chi2(x):
