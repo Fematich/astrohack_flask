@@ -6,7 +6,7 @@ import arrow
 from test_scoring_script import calculate_full_score
 import operator
 
-UPLOAD_FOLDER = '/Users/hendrik/Documents/astrohack/flask_checker/submissions'
+UPLOAD_FOLDER = 'astrohack/submissions'
 LEADERBOARD = dict()
 
 app = Flask(__name__)
@@ -59,7 +59,7 @@ def upload_file():
             file.save(filepath)
 
             chi2_score = calculate_full_score(filepath)
-            app.config['LEADERBOARD'] = upload1_leaderboard(app.config['LEADERBOARD'], (teamname, chi2_score))
+            app.config['LEADERBOARD'] = upload_leaderboard(app.config['LEADERBOARD'], (teamname, chi2_score))
 
             return redirect(url_for('upload_file',
                                     filename=filename))
