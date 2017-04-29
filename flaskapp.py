@@ -1,6 +1,5 @@
-from flask import Flask
 import os
-from flask import Flask, request, redirect, url_for
+from flask import Flask, request, redirect, url_for, flash
 from werkzeug.utils import secure_filename
 import arrow
 from test_scoring_script import calculate_full_score
@@ -15,22 +14,33 @@ app.config['LEADERBOARD'] = LEADERBOARD
 
 ALLOWED_EXTENSIONS = set(['csv', 'txt'])
 
-
-# @app.route("/")
-# def hello():
-#     return "Hello World!"
-
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def upload_leaderboard(leaderboard, new_kv):
+def upload_leaderboard(new_kv):
     k,v = new_kv
-    if k in leaderboard:
-        leaderboard[k] = min(leaderboard[k],v)
-    else:
+
+    #read leaderboard
+    leaderboard = dict()
+
+    leaderboard_path = 'astrohack/leaderboard/0_latest_board.txt'
+
+    with open(leaderboard_path) as f:
+        lines = f.readlines()
+        for line in lines:
+            a,b = line.split(',')
+            leaderboard[a]=b
+
+    if (k in leaderboard and leaderboard[k] > v) or k not in leaderboard:
         leaderboard[k] = v
+
+        #rewrite
+        with open(leaderboard_path) as f:
+            for k,v in leaderboard:
+                f.writeline(k + ',' + v)
+
     return leaderboard
 
 
@@ -39,16 +49,19 @@ def upload_file():
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
-            # flash('No file part')
+            flash('No file part')
             return redirect(request.url)
+        if 'teamname' not in request.form:
+            flash('No teamname was chosen1!')
+            return redirect(request.url)
+
         file = request.files['file']
-        # print request.form.keys()
         teamname = request.form['teamname']
 
         # if user does not select file, browser also
         # submit a empty part without filename
         if file.filename == '':
-            # flash('No selected file')
+            flash('No selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
 
@@ -59,7 +72,7 @@ def upload_file():
             file.save(filepath)
 
             chi2_score = calculate_full_score(filepath)
-            app.config['LEADERBOARD'] = upload_leaderboard(app.config['LEADERBOARD'], (teamname, chi2_score))
+            upload_leaderboard((teamname, chi2_score))
 
             return redirect(url_for('upload_file',
                                     filename=filename))
@@ -77,6 +90,7 @@ def upload_file():
             # print k, v
             leaderboard_string += '<tr><td>' + str(k) + '</td><td>' + str(v) + '</td></tr>'
 
+        #todo: https://stackoverflow.com/questions/7863251/clicking-the-text-to-select-corresponding-radio-button
         return '''
             <!doctype html>
             <title>Upload new File</title>
